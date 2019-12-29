@@ -1,13 +1,30 @@
 //MODELOS
-const { Image } = require('../models');
+const { Image, Comment } = require('../models');
 
 const path = require('path');
 const { randomName } = require('../helpers/libs');
 const fs = require('fs-extra');
+const md5 = require('md5');
 const ctrls = {}
 
-ctrls.index = (req, res) => {
-    res.send('Index pag');
+ctrls.index = async(req, res) => {
+    const piplete = [{
+        $match: { filename: { $regex: req.params.imagen_id } }
+    }, {
+        $lookup: {
+            from: 'comments',
+            localField: '_id',
+            foreignField: 'image_id',
+            as: 'comments'
+        }
+    }]
+    let image = await Image.aggregate(piplete);
+    image = image[0];
+    console.log(image);
+
+
+
+    res.render('image', { image });
 }
 
 ctrls.create = async(req, res) => {
@@ -50,7 +67,21 @@ ctrls.create = async(req, res) => {
 
 ctrls.like = (req, res) => {}
 
-ctrls.comment = (req, res) => {}
+ctrls.comment = async(req, res) => {
+    const imagen = await Image.findById(req.params.imagen_id);
+    if (imagen) {
+        try {
+            const newComment = new Comment(req.body);
+
+            newComment.image_id = imagen._id;
+            newComment.gravatar = md5(newComment.email);
+            await newComment.save();
+            res.redirect(`images/${imagen.uniqueId}`)
+
+        } catch (err) {}
+    }
+
+}
 
 ctrls.remove = (req, res) => {}
 

@@ -19,7 +19,7 @@ module.exports = app => {
         partialsDir: path.join(app.get('views'), 'partials'),
         layoutsDir: path.join(app.get('views'), 'layouts'),
         extname: '.hbs',
-        //helpers: require('./helpers ')
+        helpers: require('./helpers')
     }));
     app.set('view engine', '.hbs');
 
@@ -39,6 +39,7 @@ module.exports = app => {
 
     //static files
     app.use('/public', express.static(path.join(__dirname, '../public')));
+
 
     //errorhandlers
     if ('development' === app.get('env')) {
